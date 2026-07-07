@@ -133,6 +133,27 @@ export async function promptForOptions(
 }
 
 /**
+ * Final, optional "support Spectrum" step. Only reached when the caller has
+ * confirmed the `gh` CLI is installed and authenticated. A single "yes" stars
+ * spectrum-ts and follows the Photon org — two GitHub actions behind one
+ * confirm.
+ *
+ * The project is already scaffolded by the time this runs, so cancelling
+ * (Ctrl-C / Esc) must not report failure: no exiting `onCancel` is passed, so
+ * an aborted prompt resolves to `undefined` and is treated as "no".
+ */
+export async function askStarAndFollow(): Promise<boolean> {
+  const { value } = await prompts({
+    type: "confirm",
+    name: "value",
+    message:
+      "Support Spectrum? Star spectrum-ts and follow @photon-hq on GitHub",
+    initial: true,
+  });
+  return value === true;
+}
+
+/**
  * Caution gate for `--projectId`: provisioning rotates (regenerates) the
  * project's API secret so it can write a working one into `.env`.
  */

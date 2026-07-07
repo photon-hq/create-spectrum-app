@@ -4,8 +4,13 @@ import { basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import pc from "picocolors";
+import { canOfferGitHub, starAndFollow } from "./github.ts";
 import { isPm, type PackageManager } from "./pm.ts";
-import { type PartialOptions, promptForOptions } from "./prompts.ts";
+import {
+  askStarAndFollow,
+  type PartialOptions,
+  promptForOptions,
+} from "./prompts.ts";
 import {
   fetchManifest,
   InstallError,
@@ -176,10 +181,44 @@ async function main(): Promise<number> {
   const secretWritten =
     credentials !== undefined && credentials.projectSecret.length > 0;
   printNextSteps(result, opts, secretWritten);
+
+  // Skip in the unattended -y path — this is an interactive-only courtesy step.
+  if (!values.yes) {
+    await offerGitHubSupport();
+  }
+
   process.stdout.write(
     `\n${SYM.arrow} ${pc.dim("Docs:")} ${pc.cyan("https://photon.codes/docs/spectrum-ts")}\n\n`
   );
   return 0;
+}
+
+/**
+ * After a successful scaffold, offer to star spectrum-ts and follow the Photon
+ * org via the `gh` CLI. The offer only appears when `gh` is installed and the
+ * user is authenticated — no point asking for something we can't perform. A
+ * single "yes" runs both actions; each is best-effort and warns (never throws)
+ * on failure, so this can't turn a finished scaffold into a failure.
+ */
+async function offerGitHubSupport(): Promise<void> {
+  // No interactive stdin (piped input / CI): don't spawn `gh` or block waiting
+  // on a prompt that can never be answered.
+  if (!process.stdin.isTTY) {
+    return;
+  }
+  if (!(await canOfferGitHub())) {
+    return;
+  }
+  process.stdout.write("\n");
+  if (!(await askStarAndFollow())) {
+    return;
+  }
+  await starAndFollow({
+    logger: {
+      step: (msg) => process.stdout.write(`  ${SYM.ok} ${msg}\n`),
+      warn: (msg) => process.stderr.write(`  ${pc.yellow("!")} ${msg}\n`),
+    },
+  });
 }
 
 export function collectFlagOptions(

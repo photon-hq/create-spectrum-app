@@ -21,6 +21,8 @@ You'll be asked for:
 - Whether to install dependencies and initialize git
 - Whether to install the `spectrum` agent skill (default: yes)
 
+At the very end — only if the [GitHub CLI](https://cli.github.com) (`gh`) is installed and authenticated — you'll be offered a one-tap way to support the project: saying yes stars [`spectrum-ts`](https://github.com/photon-hq/spectrum-ts) and follows [`@photon-hq`](https://github.com/photon-hq) on GitHub via `gh`. It's skipped entirely with `-y`, when `gh` is missing or logged out, and in non-interactive shells.
+
 The generated project includes `src/index.ts` with the selected providers wired in, a `package.json` pinned to the current `spectrum-ts` release, an `AGENTS.md` + `CLAUDE.md` so AI coding agents have project context immediately, the `spectrum` skill from [`photon-hq/skills`](https://github.com/photon-hq/skills) installed locally, a ready-to-fill `.env` (plus a tracked `.env.example`) for any required credentials, and an echo loop that runs on `bun start`.
 
 ## Non-interactive
