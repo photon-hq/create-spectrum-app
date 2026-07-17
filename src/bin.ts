@@ -426,10 +426,7 @@ function printHelp(): void {
     [pad(flag("--no-git")), "Skip git init"],
     [pad(flag("--no-skills")), "Skip Spectrum skill install"],
     [pad(flag("--no-cloud")), "Skip Spectrum Cloud project setup"],
-    [
-      pad(`${flag("-y")}, ${flag("--yes")}`),
-      "Use defaults; skip interactive prompts",
-    ],
+    [pad(flag("--yes")), "Use defaults; skip interactive prompts"],
     [pad(flag("--verbose")), "Stream install stdout/stderr"],
     [pad(`${flag("-h")}, ${flag("--help")}`), "Show this help"],
     [pad(flag("--version")), "Show version"],

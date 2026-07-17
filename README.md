@@ -39,13 +39,13 @@ Options:
   --no-install         Skip dependency install
   --no-git             Skip git init
   --no-skills          Skip Spectrum skill install
-  -y, --yes            Use defaults; skip interactive prompts
+  --yes                Use defaults; skip interactive prompts
   --verbose            Stream install stdout/stderr
   -h, --help           Show help
   --version            Show version
 ```
 
-Defaults (applied by `-y` and as fallbacks for any flag you don't set):
+Defaults (applied by `--yes` and as fallbacks for any flag you don't set):
 
 - Directory: `my-spectrum-app`
 - Providers: `imessage` (first platform in the manifest)
@@ -58,7 +58,7 @@ Examples:
 
 ```sh
 # iMessage, no prompts, all defaults
-bun create spectrum-project@latest -y
+bun create spectrum-project@latest --yes
 
 # Terminal sandbox (dev TUI, no credentials)
 bun create spectrum-project@latest my-app --platforms terminal
