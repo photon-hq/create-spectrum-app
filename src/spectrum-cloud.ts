@@ -191,7 +191,7 @@ export async function provisionSpectrumProject(
     if (!projectSecret) {
       return bail(
         opts.projectId
-          ? `Could not read the secret for project ${projectId}; check the id and your access with \`photon whoami\`.`
+          ? `Could not read the secret for project ${projectId}; check the id and your access with \`${cliInvocation().join(" ")} whoami\`.`
           : "Created the project but could not read its secret;"
       );
     }
