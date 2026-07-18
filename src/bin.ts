@@ -328,9 +328,17 @@ function fillDefaults(partial: PartialOptions, manifest: Manifest) {
 
 type NextStep = { cmd: string } | { note: string };
 
-// Chars that pass through a shell unquoted; anything else gets wrapped in
-// double quotes because the printed `cd` line exists to be copy-pasted.
+// Chars that pass through a shell unquoted; anything else gets single-quoted
+// because the printed `cd` line exists to be copy-pasted. Single quotes (not
+// double) so $VAR, $(...), and backticks can't expand; embedded single quotes
+// use the POSIX '\'' dance.
 const SHELL_SAFE_PATH = /^[\w\-./]+$/;
+
+function shellQuotePath(path: string): string {
+  return SHELL_SAFE_PATH.test(path)
+    ? path
+    : `'${path.replaceAll("'", "'\\''")}'`;
+}
 
 // Exported for tests.
 export function buildNextSteps(
@@ -355,8 +363,7 @@ export function buildNextSteps(
   // ".") needs no cd at all.
   const rel = relative(invokedFrom, result.targetDir);
   if (rel !== "") {
-    const quoted = SHELL_SAFE_PATH.test(rel) ? rel : `"${rel}"`;
-    steps.push({ cmd: `cd ${quoted}` });
+    steps.push({ cmd: `cd ${shellQuotePath(rel)}` });
   }
   if (!result.steps.installed) {
     steps.push({ cmd: pm === "yarn" ? "yarn" : `${pm} install` });

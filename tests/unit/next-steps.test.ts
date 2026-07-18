@@ -22,48 +22,64 @@ function commands(steps: ReturnType<typeof stepsFor>) {
 describe("next steps — cd hint", () => {
   test("scaffolding into the current directory prints no cd step", () => {
     const steps = stepsFor(
-      "/Users/ryanzhu/Projects/prompt-test",
-      "/Users/ryanzhu/Projects/prompt-test"
+      "/Users/testuser/Projects/prompt-test",
+      "/Users/testuser/Projects/prompt-test"
     );
     expect(commands(steps)).toEqual(["bun start"]);
   });
 
   test("child directory target prints cd with the directory name", () => {
     const steps = stepsFor(
-      "/Users/ryanzhu/Projects/my-app",
-      "/Users/ryanzhu/Projects"
+      "/Users/testuser/Projects/my-app",
+      "/Users/testuser/Projects"
     );
     expect(commands(steps)).toEqual(["cd my-app", "bun start"]);
   });
 
   test("nested target prints the full relative path, not the basename", () => {
     const steps = stepsFor(
-      "/Users/ryanzhu/Projects/apps/foo",
-      "/Users/ryanzhu/Projects"
+      "/Users/testuser/Projects/apps/foo",
+      "/Users/testuser/Projects"
     );
     expect(commands(steps)).toEqual(["cd apps/foo", "bun start"]);
   });
 
   test("target with spaces is quoted so the command survives a shell", () => {
     const steps = stepsFor(
-      "/Users/ryanzhu/Projects/apps/my app",
-      "/Users/ryanzhu/Projects"
+      "/Users/testuser/Projects/apps/my app",
+      "/Users/testuser/Projects"
     );
-    expect(commands(steps)).toEqual(['cd "apps/my app"', "bun start"]);
+    expect(commands(steps)).toEqual(["cd 'apps/my app'", "bun start"]);
+  });
+
+  test("shell metacharacters are single-quoted so they can't expand", () => {
+    const steps = stepsFor(
+      "/Users/testuser/Projects/$HOME dir",
+      "/Users/testuser/Projects"
+    );
+    expect(commands(steps)).toEqual(["cd '$HOME dir'", "bun start"]);
+  });
+
+  test("embedded single quotes use the POSIX '\\'' escape", () => {
+    const steps = stepsFor(
+      "/Users/testuser/Projects/it's-a-dir",
+      "/Users/testuser/Projects"
+    );
+    expect(commands(steps)).toEqual(["cd 'it'\\''s-a-dir'", "bun start"]);
   });
 
   test("plain paths stay unquoted", () => {
     const steps = stepsFor(
-      "/Users/ryanzhu/Projects/apps/my-app",
-      "/Users/ryanzhu/Projects"
+      "/Users/testuser/Projects/apps/my-app",
+      "/Users/testuser/Projects"
     );
     expect(commands(steps)).toEqual(["cd apps/my-app", "bun start"]);
   });
 
   test("target outside the invocation directory prints a relative path", () => {
     const steps = stepsFor(
-      "/Users/ryanzhu/Projects/sibling",
-      "/Users/ryanzhu/Projects/prompt-test"
+      "/Users/testuser/Projects/sibling",
+      "/Users/testuser/Projects/prompt-test"
     );
     expect(commands(steps)).toEqual(["cd ../sibling", "bun start"]);
   });
