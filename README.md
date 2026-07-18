@@ -35,19 +35,20 @@ Usage: create-spectrum-project [directory] [options]
 Options:
   --platforms <list>   Comma-separated keys: terminal, imessage, telegram, whatsapp-business
                        (alias: --providers)
-  --projectId <id>     Use an existing Spectrum Cloud project (skip create, mint its
+  --projectId <id>     Use an existing Spectrum Cloud project (skip create, read its
                        secret into .env)
   --pm <m>             bun | npm | pnpm | yarn (default: detected)
   --no-install         Skip dependency install
   --no-git             Skip git init
   --no-skills          Skip Spectrum skill install
-  -y, --yes            Use defaults; skip interactive prompts
+  --no-cloud           Skip Spectrum Cloud project setup
+  --yes                Use defaults; skip interactive prompts
   --verbose            Stream install stdout/stderr
   -h, --help           Show help
   --version            Show version
 ```
 
-Defaults (applied by `-y` and as fallbacks for any flag you don't set):
+Defaults (applied by `--yes` and as fallbacks for any flag you don't set):
 
 - Directory: `my-spectrum-app`
 - Providers: `imessage` (first platform in the manifest)
@@ -60,7 +61,7 @@ Examples:
 
 ```sh
 # iMessage, no prompts, all defaults
-bun create spectrum-project@latest -y
+bun create spectrum-project@latest --yes
 
 # Terminal sandbox (dev TUI, no credentials)
 bun create spectrum-project@latest my-app --platforms terminal
@@ -69,7 +70,7 @@ bun create spectrum-project@latest my-app --platforms terminal
 bun create spectrum-project@latest my-app --platforms imessage,whatsapp-business --pm pnpm --no-git
 
 # Use an existing Spectrum Cloud project — no new project is created; its
-# secret is regenerated and written into the scaffold's .env
+# existing secret is read and written into the scaffold's .env
 bun create spectrum-project@latest my-app --projectId proj_abc123
 ```
 
