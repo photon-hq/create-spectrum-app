@@ -44,6 +44,22 @@ describe("next steps — cd hint", () => {
     expect(commands(steps)).toEqual(["cd apps/foo", "bun start"]);
   });
 
+  test("target with spaces is quoted so the command survives a shell", () => {
+    const steps = stepsFor(
+      "/Users/ryanzhu/Projects/apps/my app",
+      "/Users/ryanzhu/Projects"
+    );
+    expect(commands(steps)).toEqual(['cd "apps/my app"', "bun start"]);
+  });
+
+  test("plain paths stay unquoted", () => {
+    const steps = stepsFor(
+      "/Users/ryanzhu/Projects/apps/my-app",
+      "/Users/ryanzhu/Projects"
+    );
+    expect(commands(steps)).toEqual(["cd apps/my-app", "bun start"]);
+  });
+
   test("target outside the invocation directory prints a relative path", () => {
     const steps = stepsFor(
       "/Users/ryanzhu/Projects/sibling",

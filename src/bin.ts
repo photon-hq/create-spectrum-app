@@ -351,7 +351,10 @@ export function buildNextSteps(
   // ".") needs no cd at all.
   const rel = relative(invokedFrom, result.targetDir);
   if (rel !== "") {
-    steps.push({ cmd: `cd ${rel}` });
+    // Quote when the path wouldn't survive a shell verbatim (spaces etc.) —
+    // this line exists to be copy-pasted.
+    const quoted = /^[\w\-./]+$/.test(rel) ? rel : `"${rel}"`;
+    steps.push({ cmd: `cd ${quoted}` });
   }
   if (!result.steps.installed) {
     steps.push({ cmd: pm === "yarn" ? "yarn" : `${pm} install` });
