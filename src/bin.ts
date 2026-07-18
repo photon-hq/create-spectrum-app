@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readFile } from "node:fs/promises";
-import { basename, resolve } from "node:path";
+import { basename, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import pc from "picocolors";
@@ -326,7 +326,22 @@ function fillDefaults(partial: PartialOptions, manifest: Manifest) {
   };
 }
 
-function printNextSteps(
+type NextStep = { cmd: string } | { note: string };
+
+// Chars that pass through a shell unquoted; anything else gets single-quoted
+// because the printed `cd` line exists to be copy-pasted. Single quotes (not
+// double) so $VAR, $(...), and backticks can't expand; embedded single quotes
+// use the POSIX '\'' dance.
+const SHELL_SAFE_PATH = /^[\w\-./]+$/;
+
+function shellQuotePath(path: string): string {
+  return SHELL_SAFE_PATH.test(path)
+    ? path
+    : `'${path.replaceAll("'", "'\\''")}'`;
+}
+
+// Exported for tests.
+export function buildNextSteps(
   result: {
     needsEnvFile: boolean;
     hasProviderEnvVars: boolean;
@@ -338,13 +353,18 @@ function printNextSteps(
     targetDir: string;
   },
   opts: { packageManager?: PackageManager; skills?: boolean },
-  credentialsWritten: boolean
-): void {
+  credentialsWritten: boolean,
+  invokedFrom: string
+): NextStep[] {
   const pm = opts.packageManager ?? "bun";
-  const cwd = basename(result.targetDir);
 
-  type Step = { cmd: string } | { note: string };
-  const steps: Step[] = [{ cmd: `cd ${cwd}` }];
+  const steps: NextStep[] = [];
+  // Scaffolding into the directory the user is already standing in (target
+  // ".") needs no cd at all.
+  const rel = relative(invokedFrom, result.targetDir);
+  if (rel !== "") {
+    steps.push({ cmd: `cd ${shellQuotePath(rel)}` });
+  }
   if (!result.steps.installed) {
     steps.push({ cmd: pm === "yarn" ? "yarn" : `${pm} install` });
   }
@@ -368,6 +388,16 @@ function printNextSteps(
       note: `spectrum skill install failed; retry: ${runner} -y skills add photon-hq/skills --skill spectrum --agent '*' -y`,
     });
   }
+
+  return steps;
+}
+
+function printNextSteps(
+  result: Parameters<typeof buildNextSteps>[0],
+  opts: Parameters<typeof buildNextSteps>[1],
+  credentialsWritten: boolean
+): void {
+  const steps = buildNextSteps(result, opts, credentialsWritten, process.cwd());
 
   process.stdout.write(`\n${pc.bold("Next steps")}\n`);
   for (const step of steps) {
