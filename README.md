@@ -41,6 +41,7 @@ Options:
   --no-install         Skip dependency install
   --no-git             Skip git init
   --no-skills          Skip Spectrum skill install
+  --no-cloud           Skip Spectrum Cloud project setup
   --yes                Use defaults; skip interactive prompts
   --verbose            Stream install stdout/stderr
   -h, --help           Show help
