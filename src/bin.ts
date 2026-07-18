@@ -328,6 +328,10 @@ function fillDefaults(partial: PartialOptions, manifest: Manifest) {
 
 type NextStep = { cmd: string } | { note: string };
 
+// Chars that pass through a shell unquoted; anything else gets wrapped in
+// double quotes because the printed `cd` line exists to be copy-pasted.
+const SHELL_SAFE_PATH = /^[\w\-./]+$/;
+
 // Exported for tests.
 export function buildNextSteps(
   result: {
@@ -351,9 +355,7 @@ export function buildNextSteps(
   // ".") needs no cd at all.
   const rel = relative(invokedFrom, result.targetDir);
   if (rel !== "") {
-    // Quote when the path wouldn't survive a shell verbatim (spaces etc.) —
-    // this line exists to be copy-pasted.
-    const quoted = /^[\w\-./]+$/.test(rel) ? rel : `"${rel}"`;
+    const quoted = SHELL_SAFE_PATH.test(rel) ? rel : `"${rel}"`;
     steps.push({ cmd: `cd ${quoted}` });
   }
   if (!result.steps.installed) {
